@@ -78,18 +78,11 @@ chmod +x start.sh
 ./start.sh
 ```
 
-Startup runs cleanup (stops prior containers `nemo-75b-vllm`, `puzzle_a4q`, `puzzle75b`), applies in-container patches, and starts vLLM in the background.
-
-### 4. Verify
-
-```bash
-curl http://localhost:8888/v1/models
-docker logs -f nemo-75b-vllm
-```
+`start.sh` stops any prior containers, launches vLLM in Docker, then **streams container logs** until the API responds on `/v1/models`. When the server is ready, log following stops and you get your shell back.
 
 Warmup can take several minutes on first boot while FlashInfer kernels compile.
 
-### 5. Stop
+### 4. Stop
 
 ```bash
 docker stop nemo-75b-vllm
@@ -115,6 +108,7 @@ SEQS=4 MAXLEN=131072 MOE_BACKEND=FLASHINFER_CUTLASS ./start.sh
 | `MAXLEN` | `262144` | `--max-model-len` (256k context) |
 | `MOE_BACKEND` | `FLASHINFER_CUTLASS` | MoE execution backend |
 | `EAGER` | `1` | `1` = `--enforce-eager` (CUDA graphs off; more stable on Spark) |
+| `STARTUP_TIMEOUT` | `3600` | Seconds to wait for `/v1/models` before failing |
 
 Fixed in `start.sh` (edit the script to change):
 

@@ -20,6 +20,7 @@ readonly EAGER="${EAGER:-1}"
 readonly CONTAINER_NAME="nemo-75b-vllm"
 readonly IMAGE="vllm/vllm-openai:v0.24.0"
 readonly PORT=8888
+readonly STARTUP_TIMEOUT="${STARTUP_TIMEOUT:-3600}"
 
 # Paths
 readonly MODEL_HUB_ID="models--nvidia--NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-NVFP4"
@@ -89,6 +90,57 @@ exec vllm serve ${model_path} \\
 EOF
 }
 
+wait_for_ready() {
+  local logs_pid ready=0 elapsed=0
+
+  echo ""
+  echo "Waiting for API at http://127.0.0.1:${PORT}/v1/models (container logs below) ..."
+  echo ""
+
+  docker logs -f --tail 0 "$CONTAINER_NAME" 2>&1 &
+  logs_pid=$!
+
+  cleanup_logs() {
+    kill "$logs_pid" 2>/dev/null || true
+    wait "$logs_pid" 2>/dev/null || true
+  }
+  trap cleanup_logs INT TERM
+
+  while (( elapsed < STARTUP_TIMEOUT )); do
+    if curl -sS --max-time 2 "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1; then
+      ready=1
+      break
+    fi
+    if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
+      cleanup_logs
+      trap - INT TERM
+      echo "" >&2
+      echo "error: container ${CONTAINER_NAME} exited during startup" >&2
+      docker logs --tail 80 "$CONTAINER_NAME" >&2 || true
+      return 1
+    fi
+    sleep 3
+    elapsed=$((elapsed + 3))
+  done
+
+  cleanup_logs
+  trap - INT TERM
+
+  if [[ "$ready" -ne 1 ]]; then
+    echo "" >&2
+    echo "error: API did not respond within ${STARTUP_TIMEOUT}s" >&2
+    echo "Logs: docker logs -f ${CONTAINER_NAME}" >&2
+    return 1
+  fi
+
+  echo ""
+  echo "Server is ready."
+  echo "  API:  http://127.0.0.1:${PORT}/v1"
+  echo "  Test: curl http://127.0.0.1:${PORT}/v1/models"
+  echo "  Logs: docker logs -f ${CONTAINER_NAME}"
+  return 0
+}
+
 launch_container() {
   local model_path="$1"
   local setup_script
@@ -128,7 +180,13 @@ main() {
   launch_container "$container_model_path"
   rc=$?
 
-  echo "launched ${CONTAINER_NAME} single-node kv=${KVD} moe=${MOE_BACKEND} eager=${EAGER} spec=${SPEC}/${SPEC_TOKENS} rc=${rc}"
+  if [[ "$rc" -ne 0 ]]; then
+    echo "error: docker run failed (rc=${rc})" >&2
+    exit "$rc"
+  fi
+
+  echo "launched ${CONTAINER_NAME} single-node kv=${KVD} moe=${MOE_BACKEND} eager=${EAGER} spec=${SPEC}/${SPEC_TOKENS}"
+  wait_for_ready
 }
 
 main "$@"
