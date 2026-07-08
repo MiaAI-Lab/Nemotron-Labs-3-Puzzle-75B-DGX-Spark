@@ -52,10 +52,6 @@ Verify GPU access:
 docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 ```
 
-### Optional
-
-- `~/gpu-clear.sh` — if present, `start.sh` calls it during cleanup to free GPU memory before relaunching. The script is not required.
-
 ## Quick start
 
 ### 1. Download the model
@@ -187,7 +183,7 @@ For coding agents, NVIDIA recommends passing `extra_body={"chat_template_kwargs"
 ┌─────────────────────────────────────────────────────────────┐
 │ 1. Resolve HF cache snapshot for Puzzle-75B NVFP4           │
 │ 2. Materialize symlinked model code files in snapshot         │
-│ 3. Cleanup prior GPU/containers (optional gpu-clear.sh)       │
+│ 3. Remove prior containers (nemo-75b-vllm, puzzle_a4q, etc.)  │
 │ 4. docker run vllm/vllm-openai:v0.24.0                      │
 │    ├─ NCCL lib symlink (aarch64)                              │
 │    ├─ FlashInfer all-reduce + cuda_ipc patches              │

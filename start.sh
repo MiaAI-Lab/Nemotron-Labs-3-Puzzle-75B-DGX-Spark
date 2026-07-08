@@ -25,7 +25,6 @@ readonly PORT=8888
 readonly MODEL_HUB_ID="models--nvidia--NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-NVFP4"
 readonly HF_CACHE="${HOME}/.cache/huggingface"
 readonly FLASHINFER_CACHE="${HOME}/.cache/flashinfer"
-readonly GPU_CLEAR_SCRIPT="${HOME}/gpu-clear.sh"
 
 # -----------------------------------------------------------------------------
 # Derived settings
@@ -65,7 +64,6 @@ materialize_symlinks() {
 }
 
 cleanup() {
-  bash "$GPU_CLEAR_SCRIPT" >/dev/null 2>&1 || true
   docker rm -f "$CONTAINER_NAME" puzzle_a4q puzzle75b >/dev/null 2>&1 || true
 }
 
