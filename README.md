@@ -58,7 +58,7 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 
 ```bash
 pip install -U huggingface_hub
-huggingface-cli download nvidia/NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-NVFP4
+hf download nvidia/NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-NVFP4
 ```
 
 Weights land under `~/.cache/huggingface/hub/models--nvidia--NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-NVFP4/`.
