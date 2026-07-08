@@ -162,7 +162,7 @@ For coding agents, NVIDIA recommends passing `extra_body={"chat_template_kwargs"
 
 ## Harness settings (Pi agent, thinking on)
 
-Recommended settings for `~/.pi/agent/models.json`, matching the served model name from `start.sh` (`Nemotron-75b-Puzzle`). These are adapted from the local `puzzle-75b` harness profile with **thinking enabled** via `reasoning: true` and `thinkingFormat: "nemotron_v3"`.
+Recommended settings for `~/.pi/agent/models.json`, matching the served model name from `start.sh` (`Nemotron-75b-Puzzle`).
 
 Add under a provider pointing at this server (for example `"vLLM Local"` with `baseUrl: "http://localhost:8888/v1"`):
 
