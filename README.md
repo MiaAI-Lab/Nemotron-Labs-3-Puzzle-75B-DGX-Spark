@@ -160,6 +160,54 @@ print(response.choices[0].message.content)
 
 For coding agents, NVIDIA recommends passing `extra_body={"chat_template_kwargs": {"force_nonempty_content": True}}` on chat requests.
 
+## Harness settings (Pi agent, thinking on)
+
+Recommended settings for `~/.pi/agent/models.json`, matching the served model name from `start.sh` (`Nemotron-75b-Puzzle`). These are adapted from the local `puzzle-75b` harness profile with **thinking enabled** via `reasoning: true` and `thinkingFormat: "nemotron_v3"`.
+
+Add under a provider pointing at this server (for example `"vLLM Local"` with `baseUrl: "http://localhost:8888/v1"`):
+
+```json
+{
+  "id": "Nemotron-75b-Puzzle",
+  "name": "Nemotron Labs 3 Puzzle 75B A9B NVFP4",
+  "reasoning": true,
+  "input": ["text"],
+  "contextWindow": 262144,
+  "maxTokens": 32768,
+  "params": {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0,
+    "presence_penalty": 0,
+    "repetition_penalty": 1
+  },
+  "compat": {
+    "supportsDeveloperRole": false,
+    "requiresReasoningContentOnAssistantMessages": false,
+    "thinkingFormat": "nemotron_v3"
+  }
+}
+```
+
+Summary:
+
+| Setting | Value |
+|---|---|
+| Model id | `Nemotron-75b-Puzzle` |
+| Base URL | `http://localhost:8888/v1` |
+| Thinking | **on** (`reasoning: true`, `nemotron_v3` parser) |
+| Context window | `262144` |
+| Max output tokens | `32768` |
+| Temperature | `0.6` |
+| Top-p | `0.95` |
+| Top-k | `20` |
+| Min-p | `0` |
+| Presence penalty | `0` |
+| Repetition penalty | `1` |
+
+For coding agents over the raw API, also pass `extra_body={"chat_template_kwargs": {"force_nonempty_content": true}}` so tool-use turns keep non-empty assistant content.
+
 ## Troubleshooting
 
 | Symptom | Things to try |
