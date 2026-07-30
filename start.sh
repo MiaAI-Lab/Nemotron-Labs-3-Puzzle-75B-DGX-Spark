@@ -104,7 +104,7 @@ wait_for_ready() {
     kill "$logs_pid" 2>/dev/null || true
     wait "$logs_pid" 2>/dev/null || true
   }
-  trap cleanup_logs INT TERM
+  trap 'cleanup_logs; exit 130' INT TERM
 
   while (( elapsed < STARTUP_TIMEOUT )); do
     if curl -sS --max-time 2 "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1; then
