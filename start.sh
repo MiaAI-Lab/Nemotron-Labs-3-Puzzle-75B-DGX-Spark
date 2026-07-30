@@ -172,7 +172,7 @@ launch_container() {
 main() {
   local snap container_model_path rc
 
-  snap=$(resolve_snapshot)
+  snap=$(resolve_snapshot) || exit 1
   container_model_path="/root/${snap#"$HOME"/}"
 
   materialize_symlinks "$snap"
